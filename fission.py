@@ -112,12 +112,27 @@ class Particle:
             random = rd.random()
 
             if random < 0.6:
-                new_particles = 2
+                new_neutrons = 2
             else:
-                new_particles = 3
+                new_neutrons = 3
 
-            for i in range(new_particles):
-                system.add_particle(neutron, position, velocity, acceleration, mass, radius)
+            for i in range(new_neutrons):
+                if self.neutron:
+                    particle = compare
+                else:
+                    particle = self
+
+                new_velocity = 0.2 / new_neutrons
+                angle = rd.random() * 2 * np.pi
+                new_velocity = np.array([
+                    new_velocity * np.cos(angle),
+                    new_velocity * np.sin(angle)
+                ])
+
+                system.add_particle(True, particle.position + new_velocity, new_velocity, np.array([0, 0]), 1, 0.01)
+
+            system.particles.remove(self)
+            system.particles.remove(compare)
 
             return True
 
@@ -145,7 +160,10 @@ class System:
 
         def init_particle(neutron):
             # start radius for particle
-            start_radius = 0.1
+            if neutron:
+                start_radius = 0.01
+            else:
+                start_radius = 0.1
 
             # start position for particle
             start_coord = np.array([
@@ -169,7 +187,10 @@ class System:
             start_accel = 0
 
             # start mass for particle
-            start_mass = 1
+            if neutron:
+                start_mass = 1
+            else:
+                start_mass = 235
 
             # create particle with parameters
             self.particles.append(Particle(neutron, start_coord, start_veloc, start_accel, start_mass, start_radius))
@@ -186,3 +207,48 @@ class System:
 
     def add_particle(self, neutron, position, velocity, acceleration, mass, radius):
         self.particles.append(Particle(neutron, position, velocity, acceleration, mass, radius))
+
+    def iteration(self):
+        # check special cases
+        for particle in self.particles:
+            for compare in self.particles[self.particles.index(particle) + 1:]:
+
+                # check for collision
+                if particle.is_collision(compare):
+                    # execute collision
+                    particle.collision(compare, self)
+
+        # update particle position
+        for particle in self.particles:
+            particle.position += particle.velocity * self.dt
+
+        return
+
+
+def simulation(n_particle, n_neutron, n_iterations=100, x_min=0, x_max=10, y_min=0, y_max=10):
+    system = System(n_particle, n_neutron, x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max)
+
+    for i in range(n_iterations):
+        # execute iteration
+        system.iteration()
+
+        # calculate values for plot
+        dpi = 100
+        figsize = [6, 6]
+        dots = [figsize[0] * dpi, figsize[1] * dpi]
+        dimension_diff = ((x_max - x_min) + (y_max - y_min)) / 2
+        dots_per_distance = (sum(dots) / 2) / dimension_diff
+
+        # draw iterations
+        plt.figure('particles in a box', figsize=figsize, dpi=dpi)
+        for particle in system.particles:
+            markersize = dots_per_distance * particle.radius
+            plt.plot(particle.position[0], particle.position[1], 'bo', markersize=markersize)
+        plt.xlim(x_min, x_max)
+        plt.ylim(y_min, y_max)
+        plt.draw()
+        plt.pause(0.001)
+        plt.clf()
+
+
+simulation(200, 5)
