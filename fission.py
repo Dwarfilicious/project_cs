@@ -13,7 +13,7 @@ class Particle:
     def __init__(self, neutron, position, velocity, acceleration, mass, radius):
         """
         initialization of Particle object
-        :param bool neutron: whether the particle is neutron or not
+        :param bool neutron: whether the particle is a neutron or not
         :param ndarray position: 2-dimensional positional values in the form [x, y]
         :param ndarray velocity: 2-dimensional velocity values in the form [v_x, v_y]
         :param ndarray acceleration: 2-dimensional acceleration values in the form [a_x, a_y]
@@ -78,8 +78,9 @@ class Particle:
         :return bool, int: whether nuclear fission has occurred,
         """
         assert isinstance(compare, Particle)
+        assert not self == compare
 
-        # standard deflection
+        # standard reflection
         if sum([self.neutron, compare.neutron]) != 1:
             mass1 = self.mass
             mass2 = compare.mass
@@ -109,9 +110,7 @@ class Particle:
 
         # nuclear fission
         elif sum([self.neutron, compare.neutron]) == 1:
-            random = rd.random()
-
-            if random < 0.6:
+            if rd.random() < 0.6:
                 new_neutrons = 2
             else:
                 new_neutrons = 3
@@ -159,6 +158,12 @@ class System:
         self.dt = 1
 
         def init_particle(neutron):
+            """
+            adds a Particle object to the system with initial conditions
+            depending on whether the particle is a neutron or not
+            :param bool neutron: whether the particle is a neutron or not
+            :return: None
+            """
             # start radius for particle
             if neutron:
                 start_radius = 0.01
@@ -184,7 +189,7 @@ class System:
             ])
 
             # start acceleration for particle
-            start_accel = 0
+            start_accel = np.array([0, 0])
 
             # start mass for particle
             if neutron:
@@ -206,17 +211,43 @@ class System:
         return
 
     def add_particle(self, neutron, position, velocity, acceleration, mass, radius):
+        """
+        adds a Particle object to the system with arbitrary values
+        :param bool neutron: whether the particle is a neutron or not
+        :param ndarray position: 2-dimensional positional values in the form [x, y]
+        :param ndarray velocity: 2-dimensional velocity values in the form [v_x, v_y]
+        :param ndarray acceleration: 2-dimensional acceleration values in the form [a_x, a_y]
+        :param float mass: the mass of the particle
+        :param float radius: the radius of the particle under spherical assumption
+        :return: None
+        """
         self.particles.append(Particle(neutron, position, velocity, acceleration, mass, radius))
 
+        return
+
     def iteration(self):
+        """
+        simulates a single timestep of the system
+        :return: None
+        """
         # check special cases
         for particle in self.particles:
-            for compare in self.particles[self.particles.index(particle) + 1:]:
+            # particle reaches the border of the box and gets deleted
+            if not (self.x_min < particle.position[0] + particle.radius and
+                    particle.position[0] - particle.radius < self.x_max):
+                self.particles.remove(particle)
 
-                # check for collision
-                if particle.is_collision(compare):
-                    # execute collision
-                    particle.collision(compare, self)
+            elif not (self.y_min < particle.position[1] + particle.radius and
+                      particle.position[1] - particle.radius < self.y_max):
+                self.particles.remove(particle)
+
+            else:
+                for compare in self.particles[self.particles.index(particle) + 1:]:
+                    # check for collision
+                    if particle.is_collision(compare):
+                        # execute collision
+                        if particle in self.particles:
+                            particle.collision(compare, self)
 
         # update particle position
         for particle in self.particles:
