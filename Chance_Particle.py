@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 
-###Plot hoeveelheid vervallen deeltjes niet de hoeveelheid deeltjes op tijdstip x !!!!###
-
 # First make a particle object that has a decay chance
 # Second create multiple of those particles in a list
 # Third loop over those particles as time iterations
