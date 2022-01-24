@@ -109,12 +109,15 @@ class Particle:
 
             return False
 
-        # nuclear fission
+
+        # nuclear fission  ############HERE ARE THE NEUTRONS CREATED########
         elif sum([self.neutron, compare.neutron]) == 1:
             if rd.random() < 0.6:
                 new_neutrons = 2
             else:
                 new_neutrons = 3
+
+            system.n_neutron += new_neutrons - 1
 
             for i in range(new_neutrons):
                 if self.neutron:
@@ -151,6 +154,7 @@ class System:
         :param float y_max: maximum y-coordinate of fission particles
         :return: None
         """
+        self.n_neutron = n_neutron
         self.x_min = x_min
         self.x_max = x_max
         self.y_min = y_min
@@ -237,10 +241,12 @@ class System:
             if not (self.x_min < particle.position[0] + particle.radius and
                     particle.position[0] - particle.radius < self.x_max):
                 self.particles.remove(particle)
+                self.n_neutron -= 1
 
             elif not (self.y_min < particle.position[1] + particle.radius and
                       particle.position[1] - particle.radius < self.y_max):
                 self.particles.remove(particle)
+                self.n_neutron -= 1
 
             else:
                 for compare in self.particles[self.particles.index(particle) + 1:]:
@@ -257,13 +263,15 @@ class System:
         return
 
 
-def simulation(n_particle, n_neutron, n_iterations=100, x_min=0, x_max=10, y_min=0, y_max=10):
+def simulation(n_particle, n_neutron, x_min=0, x_max=10, y_min=0, y_max=10):
     system = System(n_particle, n_neutron, x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max)
 
+    neutron_per_timestep = [n_neutron]
 
-    for i in range(n_iterations):
+    while system.n_neutron > 0:
         # execute iteration
         system.iteration()
+        neutron_per_timestep.append(system.n_neutron)
 
         # calculate values for plot
         dpi = 100
@@ -282,7 +290,11 @@ def simulation(n_particle, n_neutron, n_iterations=100, x_min=0, x_max=10, y_min
         plt.draw()
         plt.pause(0.001)
         plt.clf()
+    print(neutron_per_timestep)
 
+simulation(20, 20)
 
-simulation(200, 5)
-
+# What could be gotten out of the data?
+# How many iteration each run takes ( while there are still neutrons left)
+# How many remaining particles are left after each run
+# If the normal run and the run with a wall have significant differences between them (for example runtime)
