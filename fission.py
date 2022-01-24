@@ -1,12 +1,12 @@
-# Author: Bas Zoeteman
+# Authors: Bas Zoeteman, Maksim Kolk and Roshan Baldewsing
 # Date: 14-01-2022
+# Last edited: 24-01-2022
 # This code aims to simulate particles in a box interacting with each other.
 
 
 import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
-import csv
 
 
 class Particle:
@@ -92,7 +92,7 @@ class Particle:
             # normal velocity of self particle
             normal = compare.position - self.position
             normal /= np.linalg.norm(normal)
-            normal_scalar = (np.dot(normal, self.velocity) * (mass1 - mass2) + 2 * mass2 * compare.velocity * normal) / \
+            normal_scalar = (np.dot(normal, self.velocity) * (mass1 - mass2) + 2 * mass2 * compare.velocity * normal) /\
                             (mass1 + mass2)
             velocity_normal = np.multiply(normal_scalar, normal)
 
@@ -109,15 +109,12 @@ class Particle:
 
             return False
 
-
-        # nuclear fission  ############HERE ARE THE NEUTRONS CREATED########
+        # nuclear fission
         elif sum([self.neutron, compare.neutron]) == 1:
             if rd.random() < 0.6:
                 new_neutrons = 2
             else:
                 new_neutrons = 3
-
-            system.n_neutron += new_neutrons - 1
 
             for i in range(new_neutrons):
                 if self.neutron:
@@ -125,7 +122,7 @@ class Particle:
                 else:
                     particle = self
 
-                new_velocity = 0.2 / new_neutrons
+                new_velocity = 2 / new_neutrons
                 angle = rd.random() * 2 * np.pi
                 new_velocity = np.array([
                     new_velocity * np.cos(angle),
@@ -136,6 +133,9 @@ class Particle:
 
             system.particles.remove(self)
             system.particles.remove(compare)
+
+            system.n_particle -= 1
+            system.n_neutron += new_neutrons - 1
 
             return True
 
@@ -154,6 +154,7 @@ class System:
         :param float y_max: maximum y-coordinate of fission particles
         :return: None
         """
+        self.n_particle = n_particle
         self.n_neutron = n_neutron
         self.x_min = x_min
         self.x_max = x_max
@@ -171,22 +172,22 @@ class System:
             """
             # start radius for particle
             if neutron:
-                start_radius = 0.01
+                start_radius = 0.3
             else:
-                start_radius = 0.1
+                start_radius = 7
 
             # start position for particle
-            R = self.x_max - self.x_min
+            R = (self.x_max - self.x_min) / 2
             r = R * rd.random() ** 0.5
             theta = rd.random() * 2 * np.pi
             start_coord = np.array([
-                x = (self.x_min + self.x_max) / 2 + r * np.cos(theta),
-                y = (self.y_min + self.y_max) / 2 + r * np.sin(theta)
+                (self.x_min + self.x_max) / 2 + r * np.cos(theta),
+                (self.y_min + self.y_max) / 2 + r * np.sin(theta)
             ])
 
             # start velocity for particle
             if neutron:
-                init_veloc = 0.1
+                init_veloc = 1
             else:
                 init_veloc = 0
 
@@ -240,62 +241,80 @@ class System:
         """
         # check special cases
         for particle in self.particles:
-            # particle reaches the border of the box and gets deleted
-            if not (self.x_min < particle.position[0] + particle.radius and
-                    particle.position[0] - particle.radius < self.x_max):
-                self.particles.remove(particle)
-                self.n_neutron -= 1
+            if particle.neutron:
+                # particle reaches the border of the box and gets deleted
+                if not (self.x_min < particle.position[0] + particle.radius and
+                        particle.position[0] - particle.radius < self.x_max):
+                    self.particles.remove(particle)
+                    self.n_neutron -= 1
 
-            elif not (self.y_min < particle.position[1] + particle.radius and
-                      particle.position[1] - particle.radius < self.y_max):
-                self.particles.remove(particle)
-                self.n_neutron -= 1
+                elif not (self.y_min < particle.position[1] + particle.radius and
+                          particle.position[1] - particle.radius < self.y_max):
+                    self.particles.remove(particle)
+                    self.n_neutron -= 1
 
-            else:
-                for compare in self.particles[self.particles.index(particle) + 1:]:
-                    # check for collision
-                    if particle.is_collision(compare):
-                        # execute collision
-                        if particle in self.particles:
-                            particle.collision(compare, self)
+                else:
+                    for compare in self.particles:
+                        if particle != compare:
+
+                            # check for collision
+                            if particle.is_collision(compare):
+                                # execute collision
+                                if particle in self.particles:
+                                    particle.collision(compare, self)
 
         # update particle position
         for particle in self.particles:
-            particle.position += particle.velocity * self.dt
+            if particle.neutron:
+                particle.position += particle.velocity * self.dt
 
         return
 
 
-def simulation(n_particle, n_neutron, x_min=0, x_max=10, y_min=0, y_max=10):
+def simulation(n_particle, n_neutron, draw=False, x_min=0, x_max=1000, y_min=0, y_max=1000):
     system = System(n_particle, n_neutron, x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max)
 
-    neutron_per_timestep = [n_neutron]
+    particles_per_timestep = [n_particle]
+    neutrons_per_timestep = [n_neutron]
 
-    while system.n_neutron > 0:
+    while system.n_particle > 0.5 * n_particle and system.n_neutron > 0:
         # execute iteration
         system.iteration()
-        neutron_per_timestep.append(system.n_neutron)
+        particles_per_timestep.append(system.n_particle)
+        neutrons_per_timestep.append(system.n_neutron)
+        print(f'particles = {system.n_particle} and neutrons = {system.n_neutron}')
 
-        # calculate values for plot
-        dpi = 100
-        figsize = [6, 6]
-        dots = [figsize[0] * dpi, figsize[1] * dpi]
-        dimension_diff = ((x_max - x_min) + (y_max - y_min)) / 2
-        dots_per_distance = (sum(dots) / 2) / dimension_diff
+        if draw:
+            # calculate values for plot
+            dpi = 100
+            figsize = [6, 6]
+            dots = [figsize[0] * dpi, figsize[1] * dpi]
+            dimension_diff = ((x_max - x_min) + (y_max - y_min)) / 2
+            dots_per_distance = (sum(dots) / 2) / dimension_diff
 
-        # draw iterations
-        plt.figure('particles in a box', figsize=figsize, dpi=dpi)
-        for particle in system.particles:
-            markersize = dots_per_distance * particle.radius
-            plt.plot(particle.position[0], particle.position[1], 'bo', markersize=markersize)
-        plt.xlim(x_min, x_max)
-        plt.ylim(y_min, y_max)
-        plt.draw()
-        plt.pause(0.001)
-        plt.clf()
-    print(neutron_per_timestep)
+            # draw iterations
+            plt.figure('particles in a box', figsize=figsize, dpi=dpi)
+            for particle in system.particles:
+                markersize = dots_per_distance * particle.radius
+                plt.plot(particle.position[0], particle.position[1], 'bo', markersize=markersize)
+            plt.xlim(x_min, x_max)
+            plt.ylim(y_min, y_max)
+            plt.draw()
+            plt.pause(0.001)
+            plt.clf()
 
-simulation(20, 20)
+    particle_differences = [particles_per_timestep[i] - particles_per_timestep[i + 1]
+                            for i in range(len(particles_per_timestep))[:-1]]
+    print(particles_per_timestep)
+    print(particle_differences)
+
+    plt.plot(range(len(particles_per_timestep)), particles_per_timestep)
+    plt.xlabel('timestep')
+    plt.ylabel('amount of heavy nuclei')
+    plt.show()
+
+
+simulation(1000, 5)
 
 # remaining particles after each run
 # reaction speed (together 10 time steps)
