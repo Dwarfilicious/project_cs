@@ -297,7 +297,5 @@ def simulation(n_particle, n_neutron, x_min=0, x_max=10, y_min=0, y_max=10):
 
 simulation(20, 20)
 
-# What could be gotten out of the data?
-# How many iteration each run takes ( while there are still neutrons left)
-# How many remaining particles are left after each run
-# If the normal run and the run with a wall have significant differences between them (for example runtime)
+# remaining particles after each run
+# reaction speed (together 10 time steps)
