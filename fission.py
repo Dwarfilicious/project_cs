@@ -176,9 +176,12 @@ class System:
                 start_radius = 0.1
 
             # start position for particle
+            R = self.x_max - self.x_min
+            r = R * rd.random() ** 0.5
+            theta = rd.random() * 2 * np.pi
             start_coord = np.array([
-                self.x_min + rd.random() * ((self.x_max - start_radius) - (self.x_min + start_radius)),
-                self.y_min + rd.random() * ((self.y_max - start_radius) - (self.y_min + start_radius))
+                x = (self.x_min + self.x_max) / 2 + r * np.cos(theta),
+                y = (self.y_min + self.y_max) / 2 + r * np.sin(theta)
             ])
 
             # start velocity for particle
