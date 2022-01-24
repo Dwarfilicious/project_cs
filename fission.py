@@ -6,6 +6,7 @@
 import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
+import csv
 
 
 class Particle:
@@ -259,6 +260,7 @@ class System:
 def simulation(n_particle, n_neutron, n_iterations=100, x_min=0, x_max=10, y_min=0, y_max=10):
     system = System(n_particle, n_neutron, x_min=x_min, x_max=x_max, y_min=y_min, y_max=y_max)
 
+
     for i in range(n_iterations):
         # execute iteration
         system.iteration()
@@ -283,3 +285,4 @@ def simulation(n_particle, n_neutron, n_iterations=100, x_min=0, x_max=10, y_min
 
 
 simulation(200, 5)
+
