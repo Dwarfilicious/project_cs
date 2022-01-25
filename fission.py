@@ -7,6 +7,7 @@
 import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
+import csv
 
 
 class Particle:
@@ -303,8 +304,14 @@ def simulation(n_particle, n_neutron, draw=False, x_min=0, x_max=1000, y_min=0, 
             plt.pause(0.001)
             plt.clf()
 
+
+
     particle_differences = [particles_per_timestep[i] - particles_per_timestep[i + 1]
                             for i in range(len(particles_per_timestep))[:-1]]
+    with open('filename.csv', 'w') as myfile:
+        wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+        wr.writerow(particles_per_timestep)
+
     print(particles_per_timestep)
     print(particle_differences)
 
@@ -314,7 +321,7 @@ def simulation(n_particle, n_neutron, draw=False, x_min=0, x_max=1000, y_min=0, 
     plt.show()
 
 
-simulation(1000, 5)
+simulation(10, 5)
 
 # remaining particles after each run
 # reaction speed (together 10 time steps)
