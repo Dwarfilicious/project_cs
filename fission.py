@@ -7,6 +7,7 @@
 import random as rd
 import numpy as np
 import matplotlib.pyplot as plt
+import csv
 
 
 class Particle:
@@ -282,7 +283,7 @@ def simulation(n_particle, n_neutron, draw=False, x_min=0, x_max=1000, y_min=0, 
         system.iteration()
         particles_per_timestep.append(system.n_particle)
         neutrons_per_timestep.append(system.n_neutron)
-        print(f'particles = {system.n_particle} and neutrons = {system.n_neutron}')
+        # print(f'particles = {system.n_particle} and neutrons = {system.n_neutron}')
 
         if draw:
             # calculate values for plot
@@ -305,16 +306,22 @@ def simulation(n_particle, n_neutron, draw=False, x_min=0, x_max=1000, y_min=0, 
 
     particle_differences = [particles_per_timestep[i] - particles_per_timestep[i + 1]
                             for i in range(len(particles_per_timestep))[:-1]]
-    print(particles_per_timestep)
-    print(particle_differences)
+    # print(particles_per_timestep)
+    # print(particle_differences)
 
     plt.plot(range(len(particles_per_timestep)), particles_per_timestep)
     plt.xlabel('timestep')
     plt.ylabel('amount of heavy nuclei')
     plt.show()
 
+    return particles_per_timestep, neutrons_per_timestep
 
-simulation(1000, 5)
+list_particle_step, list_neutrons_step = simulation(1000, 5)
+
+with open('bestand.csv', 'w', newline='') as myfile:
+    wr = csv.writer(myfile, quoting = csv.QUOTE_ALL)
+    for word, word2 in zip(list_particle_step, list_neutrons_step):
+        wr.writerow([word, word2])
 
 # What could be gotten out of the data?
 # How many iteration each run takes ( while there are still neutrons left)
