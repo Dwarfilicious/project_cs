@@ -323,7 +323,5 @@ with open('bestand.csv', 'w', newline='') as myfile:
     for word, word2 in zip(list_particle_step, list_neutrons_step):
         wr.writerow([word, word2])
 
-# What could be gotten out of the data?
-# How many iteration each run takes ( while there are still neutrons left)
-# How many remaining particles are left after each run
-# If the normal run and the run with a wall have significant differences between them (for example runtime)
+# remaining particles after each run
+# reaction speed (together 10 time steps)
