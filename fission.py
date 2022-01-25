@@ -1,7 +1,7 @@
 # Authors: Bas Zoeteman, Maksim Kolk and Roshan Baldewsing
 # Date: 14-01-2022
 # Last edited: 24-01-2022
-# This code aims to simulate particles in a box interacting with each other.
+# This code aims to simulate a simplified model of nuclear fission.
 
 
 import random as rd
