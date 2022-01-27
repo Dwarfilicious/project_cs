@@ -120,7 +120,7 @@ class Particle:
                 particle = self
                 neutron = compare
 
-            if 0.5 * neutron.mass * np.linalg.norm(neutron.velocity) ** 2 > 0.75:
+            if 0.5 * neutron.mass * np.linalg.norm(neutron.velocity) ** 2 > 0.75 and particle.mass == 235:
                 # amount of new neutrons
                 if rd.random() < 0.6:
                     new_neutrons = 2
