@@ -8,20 +8,19 @@ import matplotlib.pyplot as plt
 # data = open('bestand.csv')
 # csvreader = csv.reader(data)
 
-<<<<<<< HEAD
+
 read_csv = pd.read_csv('bestand.csv', header=None)
 print(read_csv)
 
-=======
+
 # df = pd.read_csv('bestand.csv', header=None)
->>>>>>> 228018ada71bbd39cb603080f09de274825d4afd
+
 # ax = df.plot(kind = "line")
 # ax.legend(["Particles", "Neutrons"])
 # plt.xlabel("time")
 # plt.ylabel("quantity")
-<<<<<<< HEAD
 # plt.show()
-=======
+
 # plt.show()
 
 df = pd.DataFrame
@@ -117,4 +116,4 @@ df.to_csv('df.csv')
 
 
 
->>>>>>> 228018ada71bbd39cb603080f09de274825d4afd
+
