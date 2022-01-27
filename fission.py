@@ -309,19 +309,42 @@ def simulation(n_particle, n_neutron, draw=False, x_min=0, x_max=1000, y_min=0, 
     # print(particles_per_timestep)
     # print(particle_differences)
 
-    plt.plot(range(len(particles_per_timestep)), particles_per_timestep)
-    plt.xlabel('timestep')
-    plt.ylabel('amount of heavy nuclei')
-    plt.show()
+    # plt.plot(range(len(particles_per_timestep)), particles_per_timestep)
+    # plt.xlabel('timestep')
+    # plt.ylabel('amount of heavy nuclei')
+    # plt.show()
 
     return particles_per_timestep, neutrons_per_timestep
 
-list_particle_step, list_neutrons_step = simulation(1000, 5)
+particle_amount = 10
+neutron_amount = 5
+rps = 2
+
+
+# create a list with tuples in it. Each tuple contains all the data for a certain run
+# make a list with the column names
+#
+
+# Create multiple lists, and then in the data analysis select each time a list that you want to use
 
 with open('bestand.csv', 'w', newline='') as myfile:
-    wr = csv.writer(myfile, quoting = csv.QUOTE_ALL)
-    for word, word2 in zip(list_particle_step, list_neutrons_step):
-        wr.writerow([word, word2])
 
-# remaining particles after each run
-# reaction speed (together 10 time steps)
+    wr = csv.writer(myfile, quoting = csv.QUOTE_ALL)
+    list_of_list_particles = []
+    list_of_list_neutrons = []
+
+    for repeats in range(rps):
+        list_particle_step, list_neutrons_step = simulation(particle_amount, neutron_amount)
+        list_of_list_particles.append(list_particle_step)
+        list_of_list_neutrons.append(list_neutrons_step)
+
+        # for word, word2 in zip(list_particle_step, list_neutrons_step):
+        #     wr.writerow([word, word2])
+
+
+
+
+
+
+
+
