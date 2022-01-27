@@ -112,31 +112,47 @@ class Particle:
 
         # nuclear fission
         elif sum([self.neutron, compare.neutron]) == 1:
-            if rd.random() < 0.6:
-                new_neutrons = 2
+            # to know which interacting particle is the neutron
+            if self.neutron:
+                particle = compare
+                neutron = self
             else:
-                new_neutrons = 3
+                particle = self
+                neutron = compare
 
-            for i in range(new_neutrons):
-                if self.neutron:
-                    particle = compare
+            if 0.5 * neutron.mass * np.linalg.norm(neutron.velocity) ** 2 > 0.75:
+                # amount of new neutrons
+                if rd.random() < 0.6:
+                    new_neutrons = 2
                 else:
-                    particle = self
+                    new_neutrons = 3
 
-                new_velocity = 2 / new_neutrons
-                angle = rd.random() * 2 * np.pi
-                new_velocity = np.array([
-                    new_velocity * np.cos(angle),
-                    new_velocity * np.sin(angle)
-                ])
+                for i in range(new_neutrons):
+                    # energy distribution in MeV
+                    energy = np.random.normal(0.75, 2.2)
+                    while energy < 0:
+                        energy = np.random.normal(0.75, 2.2)
 
-                system.add_particle(True, particle.position + new_velocity, new_velocity, np.array([0, 0]), 1, 0.01)
+                    # E = 0.5mv^2 with m = 1 --> v = 2E^0.5
+                    new_velocity = (2 * energy) ** 0.5
 
-            system.particles.remove(self)
-            system.particles.remove(compare)
+                    angle = rd.random() * 2 * np.pi
+                    new_velocity = np.array([
+                        new_velocity * np.cos(angle),
+                        new_velocity * np.sin(angle)
+                    ])
 
-            system.n_particle -= 1
-            system.n_neutron += new_neutrons - 1
+                    system.add_particle(True, particle.position + new_velocity, new_velocity, np.array([0, 0]), 1, 0.3)
+
+                system.particles.remove(self)
+                system.particles.remove(compare)
+
+                system.n_particle -= 1
+                system.n_neutron += new_neutrons - 1
+
+            else:
+                system.particles.remove(neutron)
+                particle.mass += 1
 
             return True
 
@@ -188,7 +204,14 @@ class System:
 
             # start velocity for particle
             if neutron:
-                init_veloc = 1
+                # energy distribution in MeV
+                energy = np.random.normal(0.75, 2.2)
+                while energy < 0:
+                    energy = np.random.normal(0.75, 2.2)
+
+                # E = 0.5mv^2 with m = 1 --> v = 2E^0.5
+                init_veloc = (2 * energy) ** 0.5
+
             else:
                 init_veloc = 0
 
@@ -309,72 +332,29 @@ def simulation(n_particle, n_neutron, draw=False, x_min=0, x_max=1000, y_min=0, 
     # print(particles_per_timestep)
     # print(particle_differences)
 
-
-    # plt.plot(range(len(particles_per_timestep)), particles_per_timestep)
-    # plt.xlabel('timestep')
-    # plt.ylabel('amount of heavy nuclei')
-
     plt.plot(range(len(particles_per_timestep)), particles_per_timestep)
     plt.xlabel('timestep')
     plt.ylabel('amount of heavy nuclei')
-
     # plt.show()
 
     return particles_per_timestep, neutrons_per_timestep
 
 
-particle_amount = 10
-neutron_amount = 5
-rps = 2
-
-
-# create a list with tuples in it. Each tuple contains all the data for a certain run
-# make a list with the column names
-#
-
-# Create multiple lists, and then in the data analysis select each time a list that you want to use
-
 # different values, number of runs
-
-
-values_run = [(10,20), (10,10), (5, 5)]
+values_run = [(1000, 20), (10, 10), (5, 5)]
 amounts_run = 4
 
 count = 1
 runcount = 1
 with open('bestand.csv', 'w', newline='') as myfile:
-
-
-    wr = csv.writer(myfile, quoting = csv.QUOTE_ALL)
-
-    list_of_list_particles = []
-    list_of_list_neutrons = []
-
-    for repeats in range(rps):
-        list_particle_step, list_neutrons_step = simulation(particle_amount, neutron_amount)
-        list_of_list_particles.append(list_particle_step)
-        list_of_list_neutrons.append(list_neutrons_step)
-
-        # for word, word2 in zip(list_particle_step, list_neutrons_step):
-        #     wr.writerow([word, word2])
-
-
-
-
-
-
-
-
-
     wr = csv.writer(myfile)
-
     for x in values_run:
         for i in range(amounts_run):
             # wr.writerow([f"experiment {count}: {x[0]} particles {x[1]} neutrons", f"run {i+1}"])
             if runcount > amounts_run:
                 runcount = 1
             wr.writerow([f"exp {count}", f"run {runcount}"])
-            list_particle_step, list_neutrons_step = simulation(x[0], x[1])
+            list_particle_step, list_neutrons_step = simulation(x[0], x[1], True)
             wr.writerow(list_particle_step)
             wr.writerow(list_neutrons_step)
             runcount += 1
@@ -382,9 +362,3 @@ with open('bestand.csv', 'w', newline='') as myfile:
 
 # remaining particles after each run
 # reaction speed (together 10 time steps)
-
-
-
-
-
-
