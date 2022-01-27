@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 # data = open('bestand.csv')
 # csvreader = csv.reader(data)
 
-
-read_csv = pd.read_csv('bestand.csv', header=None)
-print(read_csv)
+#
+# read_csv = pd.read_csv('bestand.csv', header=None)
+# print(read_csv)
 
 
 # df = pd.read_csv('bestand.csv', header=None)
@@ -102,7 +102,7 @@ while len(indexlist) < len(runs):
 
     check_even += 1
 
-print(indexlist)
+# print(indexlist)
 
 count = 0 
 for a in index:
@@ -111,7 +111,60 @@ for a in index:
         df.at[a, b] = runs[indic]
         count += 1
 
-df.to_csv('df.csv')
+# df.to_csv('df.csv')
+
+# I loop over all the particle lists from all experiments for 1 run , if the data list is an odd number, remove it
+# II check one light of the amount of particles from one run, and then check the next. If one run is longer than another
+# run then skip it, if its shorter, use that particle run length.
+# III now use that length as a point of reference and check how many iterations it took to get to that length.
+# For example, if the length is 300 than check for each run how much time it took to get 300 less particles
+
+
+# clearing the data frames of the neutron counts
+
+first_experiment = df.iloc[0]
+halved_count = int(len(df.count()) / 2)
+
+
+for i in range(1,halved_count + 1):
+    first_experiment.drop(f"exp {i}neutron" , inplace=True)
+
+final_particle_count_amounts = []
+
+# calculating lowest amount of particles in all the lists
+
+for experiment in first_experiment:
+    final_particle_amount = experiment[0] - experiment[-1]
+    final_particle_count_amounts.append(final_particle_amount)
+
+lowest_particle_count = min(final_particle_count_amounts)
+
+list_of_times = []
+
+for experiment in first_experiment:
+    time_count = 0
+    stop_value = experiment[0] - lowest_particle_count
+
+    for value in experiment:
+        if value > stop_value:
+            time_count += 1
+        else:
+            continue
+    list_of_times.append(time_count)
+
+reaction_speed_list = []
+
+for time_steps in list_of_times:
+        reaction_speed = lowest_particle_count / time_steps
+        reaction_speed_list.append(reaction_speed)
+
+print(reaction_speed_list)
+
+
+
+
+
+
 
 
 
