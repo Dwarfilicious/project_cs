@@ -24,16 +24,16 @@ with open('bestand.csv', 'r') as f:
     for line in f:
         line = line.strip().split(',')
 
-        if line[0][1] == "e":
+        if str(line[0])[0] == "e":
             columns.append(f"{line[0]}")
             # (str(line[0]))
         
-        if line[1][1] == "r":
+        if str(line[1])[0] == "r":
             index.append(line[1])
         else:
             linelist = []
             for value in line:
-                linelist.append(value)
+                linelist.append(int(value))
             runs.append(linelist)
 
 index = set(index)
@@ -102,7 +102,7 @@ for a in index:
         df.at[a, b] = runs[indic]
         count += 1
 
-print(df)
+df.to_csv('df.csv')
 
 
 

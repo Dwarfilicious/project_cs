@@ -318,13 +318,13 @@ def simulation(n_particle, n_neutron, draw=False, x_min=0, x_max=1000, y_min=0, 
 
 # different values, number of runs
 
-values_run = [(10,20), (10,10)]
-amounts_run = 3
+values_run = [(10,20), (10,10), (5, 5)]
+amounts_run = 4
 
 count = 1
 runcount = 1
 with open('bestand.csv', 'w', newline='') as myfile:
-    wr = csv.writer(myfile, quoting = csv.QUOTE_ALL)
+    wr = csv.writer(myfile)
     for x in values_run:
         for i in range(amounts_run):
             # wr.writerow([f"experiment {count}: {x[0]} particles {x[1]} neutrons", f"run {i+1}"])
