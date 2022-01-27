@@ -337,12 +337,13 @@ rps = 2
 # different values, number of runs
 >>>>>>> 228018ada71bbd39cb603080f09de274825d4afd
 
-values_run = [(10,20), (10,10)]
-amounts_run = 3
+values_run = [(10,20), (10,10), (5, 5)]
+amounts_run = 4
 
 count = 1
 runcount = 1
 with open('bestand.csv', 'w', newline='') as myfile:
+<<<<<<< HEAD
 
     wr = csv.writer(myfile, quoting = csv.QUOTE_ALL)
 <<<<<<< HEAD
@@ -365,6 +366,9 @@ with open('bestand.csv', 'w', newline='') as myfile:
 
 
 =======
+=======
+    wr = csv.writer(myfile)
+>>>>>>> ef9877b1a210b42319ff2011ecf0862e22ba1a81
     for x in values_run:
         for i in range(amounts_run):
             # wr.writerow([f"experiment {count}: {x[0]} particles {x[1]} neutrons", f"run {i+1}"])
