@@ -312,16 +312,35 @@ def simulation(n_particle, n_neutron, draw=False, x_min=0, x_max=1000, y_min=0, 
     plt.plot(range(len(particles_per_timestep)), particles_per_timestep)
     plt.xlabel('timestep')
     plt.ylabel('amount of heavy nuclei')
-    plt.show()
+    # plt.show()
 
     return particles_per_timestep, neutrons_per_timestep
 
-list_particle_step, list_neutrons_step = simulation(1000, 5)
+# different values, number of runs
 
+values_run = [(10,20), (10,10)]
+amounts_run = 3
+
+count = 1
+runcount = 1
 with open('bestand.csv', 'w', newline='') as myfile:
     wr = csv.writer(myfile, quoting = csv.QUOTE_ALL)
-    for word, word2 in zip(list_particle_step, list_neutrons_step):
-        wr.writerow([word, word2])
+    for x in values_run:
+        for i in range(amounts_run):
+            # wr.writerow([f"experiment {count}: {x[0]} particles {x[1]} neutrons", f"run {i+1}"])
+            if runcount > amounts_run:
+                runcount = 1
+            wr.writerow([f"exp {count}", f"run {runcount}"])
+            list_particle_step, list_neutrons_step = simulation(x[0], x[1])
+            wr.writerow(list_particle_step)
+            wr.writerow(list_neutrons_step)
+            runcount += 1
+        count += 1
 
 # remaining particles after each run
 # reaction speed (together 10 time steps)
+
+
+
+
+
