@@ -331,9 +331,9 @@ def simulation(n_particle, n_neutron, draw=False, x_min=0, x_max=1000, y_min=0, 
 
 
 # different values, number of runs
-values_run = [(600, 1000), (700, 1000), (800, 1000),
-              (900, 1000), (1000, 1000), (1100, 1000),
-              (1200, 1000), (1300, 1000), (1400, 1000),
+values_run = [(1000, 1183), (1000, 1140), (1000, 1095),
+              (1000, 1049), (1000, 1000), (1000, 949),
+              (1000, 894), (1000, 837), (1000, 775),
               (600, 775), (700, 837), (800, 894),
               (900, 949), (1000, 1000), (1100, 1049),
               (1200, 1095), (1300, 1140), (1400, 1183)]
@@ -341,11 +341,12 @@ amounts_run = 30
 
 with open('data.csv', 'w', newline='') as myfile:
     wr = csv.writer(myfile)
-    wr.writerow('The experiments 1-9 are the different density value simulations')
-    wr.writerow('and the experiments 10-18 are the different total mass value simulations.')
-    wr.writerow('1-9 all run with box size 1000 and then amount of heavy nuclei values 600-1400 in steps of 100.')
-    wr.writerow('10-18 run with the same heavy nucleus values 600-1400 in steps of 100, ')
-    wr.writerow('but with corresponding box sizes to keep the density of heavy nuclei constant.')
+    myfile.write('The experiments 1-9 are the different density value simulations\n')
+    myfile.write('and the experiments 10-18 are the different total mass value simulations.\n')
+    myfile.write('1-9 all run with box size 1000 and then amount of heavy nuclei values 600-1400 in steps of 100.\n')
+    myfile.write('10-18 run with the same heavy nucleus values 600-1400 in steps of 100, \n')
+    myfile.write('but with corresponding box sizes to keep the density of heavy nuclei constant.\n')
+    myfile.write('\n')
 
     count = 1
     for x in values_run:
