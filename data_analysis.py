@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 # csvreader = csv.reader(data)
 
 
-read_csv = pd.read_csv('bestand.csv', header=None)
-print(read_csv)
+# read_csv = pd.read_csv('bestand.csv', header=None)
+# print(read_csv)
 
 
 # df = pd.read_csv('bestand.csv', header=None)
@@ -23,7 +23,7 @@ print(read_csv)
 
 # plt.show()
 
-df = pd.DataFrame
+# df = pd.DataFrame
 
 columns = []
 index = []
@@ -102,7 +102,7 @@ while len(indexlist) < len(runs):
 
     check_even += 1
 
-print(indexlist)
+# print(indexlist)
 
 count = 0 
 for a in index:
@@ -111,9 +111,44 @@ for a in index:
         df.at[a, b] = runs[indic]
         count += 1
 
-df.to_csv('df.csv')
+# df.to_csv('df.csv')
+
+def amount_particles_reacted(dataframe):
+    '''
+    Function to calculate reaction speed from a dataframe
+    '''
+
+    # determine smallest amount of interactions that take place in an experiment
+    find_smallest = []
+
+    for col in dataframe.columns:
+        if col[5] == "p":
+            run = dataframe[col]
+            run = run[0]
+
+            # decrease in amount of particles
+            diff = run[0] / 2
+            find_smallest.append(diff)
+    amount = min(find_smallest)
+    return amount
+
+def reaction_time(dataframe, minimum):
+    '''
+    Function to get average and standard deviations of reaction speed
+    '''
+
+    experiments_list = []
+    mean_reactiontime = []
+    sd_reactiontime = []
+
+    for col in dataframe.columns:
+        if col[5] == "p":
+            runs = dataframe[col]
+            
+            
+a = amount_particles_reacted(df)
+b = 
 
 
-
-
-
+# # get names of experiments
+#     experiment_list = []
