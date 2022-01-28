@@ -343,9 +343,10 @@ with open('data.csv', 'w', newline='') as myfile:
     wr = csv.writer(myfile)
     myfile.write('The experiments 1-9 are the different density value simulations\n')
     myfile.write('and the experiments 10-18 are the different total mass value simulations.\n')
-    myfile.write('1-9 all run with box size 1000 and then amount of heavy nuclei values 600-1400 in steps of 100.\n')
-    myfile.write('10-18 run with the same heavy nucleus values 600-1400 in steps of 100, \n')
-    myfile.write('but with corresponding box sizes to keep the density of heavy nuclei constant.\n')
+    myfile.write('1-9 all run with 1000 heavy nuclei and varying radius values \n')
+    myfile.write('corresponding to steps of 10% in surface area ranging from 60%-140%.\n')
+    myfile.write('10-18 run with heavy nuclei values 600-1400 in steps of 100, \n')
+    myfile.write('and with corresponding radius values to keep the density of heavy nuclei constant.\n')
     myfile.write('\n')
 
     count = 1
