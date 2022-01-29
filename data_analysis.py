@@ -4,10 +4,10 @@
 import csv
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 # data = open('bestand.csv')
 # csvreader = csv.reader(data)
-
 
 # read_csv = pd.read_csv('bestand.csv', header=None)
 # print(read_csv)
@@ -29,7 +29,7 @@ columns = []
 index = []
 runs = []
 
-with open('bestand.csv', 'r') as f:
+with open('data2 _manually_altered.csv', 'r') as f:
     for line in f:
         line = line.strip().split(',')
 
@@ -113,6 +113,59 @@ for a in index:
 
 # df.to_csv('df.csv')
 
+# I loop over all the particle lists from all experiments for 1 run , if the data list is an odd number, remove it
+# II check one light of the amount of particles from one run, and then check the next. If one run is longer than another
+# run then skip it, if its shorter, use that particle run length.
+# III now use that length as a point of reference and check how many iterations it took to get to that length.
+# For example, if the length is 300 than check for each run how much time it took to get 300 less particles
+
+
+# clearing the data frames of the neutron counts
+
+# first_experiment = df.iloc[0]
+# halved_count = int(len(df.count()) / 2)
+
+
+# for i in range(1,halved_count + 1):
+#     first_experiment.drop(f"exp {i}neutron" , inplace=True)
+
+# final_particle_count_amounts = []
+
+# # calculating lowest amount of particles in all the lists
+
+# for experiment in first_experiment:
+#     final_particle_amount = experiment[0] - experiment[-1]
+#     final_particle_count_amounts.append(final_particle_amount)
+
+# lowest_particle_count = min(final_particle_count_amounts)
+
+# list_of_times = []
+
+# for experiment in first_experiment:
+#     time_count = 0
+#     stop_value = experiment[0] - lowest_particle_count
+
+#     for value in experiment:
+#         if value > stop_value:
+#             time_count += 1
+#         else:
+#             continue
+#     list_of_times.append(time_count)
+
+# reaction_speed_list = []
+
+# for time_steps in list_of_times:
+#         reaction_speed = lowest_particle_count / time_steps
+#         reaction_speed_list.append(reaction_speed)
+
+# print(reaction_speed_list)
+
+
+
+
+
+
+
 def amount_particles_reacted(dataframe):
     '''
     Function to calculate reaction speed from a dataframe
@@ -138,17 +191,61 @@ def reaction_time(dataframe, minimum):
     '''
 
     experiments_list = []
-    mean_reactiontime = []
-    sd_reactiontime = []
+    mean_reaction_times = []
+    sdev_reaction_times = []
+    lower_bounds_list = []
+    upper_bounds_list = []
 
+    # select particle values for each experiment
+    # title_count is for collecting experiment numbers
+    title_count = 0
     for col in dataframe.columns:
         if col[5] == "p":
+            title_count += 1
+            experiments_list.append(title_count)
+
             runs = dataframe[col]
-            
+
+            # get reaction time for each run
+            reaction_times = []
+
+            # iterate through runs and get reaction times
+            for run in runs:
+                count = 0 
+                for datapoint in run:
+                    if run[0] - datapoint == minimum:
+                        reaction_time = minimum / count
+                        #break?/while?
+                    count += 1
+
+                reaction_times.append(reaction_time)
+        
+            # get mean and sd for each experiment
+            mean_reaction_time = np.mean(reaction_times)
+            sdev_reaction_time = np.std(reaction_times)
+            mean_reaction_times.append(mean_reaction_time)
+            sdev_reaction_times.append(sdev_reaction_time)
+
+            # confidence intervals - bootstrap? - *v
+            lower_bound = np.percentile(reaction_times, 2.5)
+            upper_bound = np.percentile(reaction_times, 97.5)
+            lower_bounds_list.append(lower_bound)
+            upper_bounds_list.append(upper_bound)
+
+    return experiments_list, mean_reaction_times, sdev_reaction_times, lower_bounds_list, upper_bounds_list
             
 a = amount_particles_reacted(df)
-b = 
+exps, means, sdevs, lowerlist, upperlist = reaction_time(df, a)
 
+# plt.plot(exps, means)
+# plt.show() - % stck - *        experiment waardes in figuur?
+fig, ax = plt.subplots()
+ax.plot(exps,means)
+ax.fill_between(exps, (lowerlist), (upperlist), color='b', alpha=0.1)
+plt.title("mean reaction times for experiments, with 95% confidence intervals")
+plt.xlabel("experiments")
+plt.ylabel("mean reaction time")
+plt.show()
 
 # # get names of experiments
 #     experiment_list = []
