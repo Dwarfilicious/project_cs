@@ -30,8 +30,9 @@ columns = []
 index = []
 runs = []
 
-with open('data2 _manually_altered.csv', 'r') as f:
-# with open('data1.csv', 'r') as f:
+# toggle csv file
+# with open('data2 _manually_altered.csv', 'r') as f:
+with open('data3.csv', 'r') as f:
     for line in f:
         line = line.strip().split(',')
 
@@ -90,30 +91,24 @@ df = pd.DataFrame(columns=newcolumns, index=index_sorted)
 # put runs in dataframe in correct order
 indexlist = []
 start = 0
+restart = 0
 check_even = 2
-plus_or_minus = 2
-
-indexlist.append(start)
 
 # matrix solving algorithm
-# aantal runs *2 -1
 while len(indexlist) < len(runs):
+
+    indexlist.append(start)
 
     if check_even % 2 == 0:
         add = 1
-        start += add
-        indexlist.append(start)
-
     else:
-        if plus_or_minus % 2 == 0:
-            add = (2 * len(index_sorted)) - 1
-            start += add
-            indexlist.append(start)
-        else:
-            subtract = (2 * len(index_sorted)) - 1
-            start -= subtract
-            indexlist.append(start)
-        plus_or_minus += 1
+        add = (2 * len(index_sorted)) - 1
+
+    if start + add < len(runs):
+        start = start + add
+    else:
+        start = restart + 2
+        restart += 2
 
     check_even += 1
 
@@ -124,7 +119,6 @@ for a in index_sorted:
         df.at[a, b] = runs[indic]
         count += 1
 
-print(df)
 
 # df.to_csv('df.csv')
 
@@ -174,8 +168,6 @@ print(df)
 #         reaction_speed_list.append(reaction_speed)
 
 # print(reaction_speed_list)
-
-print(df)
 
 def amount_particles_reacted(dataframe):
     '''
@@ -275,7 +267,7 @@ plt.xlabel("experiments")
 plt.ylabel("mean reaction time")
 plt.show()
 
-
+print(df)
 
 
 # get names of experiments
