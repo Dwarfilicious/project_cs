@@ -25,11 +25,13 @@ import numpy as np
 
 # df = pd.DataFrame
 
+# len of runs should be 2 * runs * experiments
 columns = []
 index = []
 runs = []
 
 with open('data2 _manually_altered.csv', 'r') as f:
+# with open('data1.csv', 'r') as f:
     for line in f:
         line = line.strip().split(',')
 
@@ -38,16 +40,21 @@ with open('data2 _manually_altered.csv', 'r') as f:
             # (str(line[0]))
         
         if str(line[1])[0] == "r":
-            index.append(line[1])
+            index.append(line[1][4:6])
+            # line[1]
+
         else:
             linelist = []
             for value in line:
-                linelist.append(int(value))
+                try:
+                    linelist.append(int(value))
+                except ValueError:
+                    skip = 1
             runs.append(linelist)
-
+            
 index = set(index)
 index = list(index)
-index.sort()
+index_sorted = sorted(index, key=int)
 
 columns = set(columns)
 columns = list(columns)
@@ -56,6 +63,7 @@ columns.sort()
 newcolumns = []
 count = 2
 
+# put particle and neutron in column names
 for x in range(len(columns)*2):
     new_words = []
 
@@ -76,40 +84,47 @@ for x in range(len(columns)*2):
 
     count += 1
 
+# initialize dataframe
+df = pd.DataFrame(columns=newcolumns, index=index_sorted)
 
-df = pd.DataFrame(columns=newcolumns, index=index)
-
+# put runs in dataframe in correct order
 indexlist = []
 start = 0
-restart = 0
 check_even = 2
-# runs = len(newcolumns * len(index))
-while len(indexlist) < len(runs):
+plus_or_minus = 2
 
-    indexlist.append(start)
+indexlist.append(start)
+
+# matrix solving algorithm
+# aantal runs *2 -1
+while len(indexlist) < len(runs):
 
     if check_even % 2 == 0:
         add = 1
-    else:
-        add = (2 * len(index)) - 1
+        start += add
+        indexlist.append(start)
 
-    if start + add < len(runs):
-        start = start + add
     else:
-        start = restart + 2
-        restart += 2
-        # minus 2 * len index - 1
+        if plus_or_minus % 2 == 0:
+            add = (2 * len(index_sorted)) - 1
+            start += add
+            indexlist.append(start)
+        else:
+            subtract = (2 * len(index_sorted)) - 1
+            start -= subtract
+            indexlist.append(start)
+        plus_or_minus += 1
 
     check_even += 1
 
-# print(indexlist)
-
 count = 0 
-for a in index:
+for a in index_sorted:
     for b in newcolumns:
         indic = indexlist[count]
         df.at[a, b] = runs[indic]
         count += 1
+
+print(df)
 
 # df.to_csv('df.csv')
 
@@ -160,11 +175,7 @@ for a in index:
 
 # print(reaction_speed_list)
 
-
-
-
-
-
+print(df)
 
 def amount_particles_reacted(dataframe):
     '''
@@ -175,7 +186,7 @@ def amount_particles_reacted(dataframe):
     find_smallest = []
 
     for col in dataframe.columns:
-        if col[5] == "p":
+        if col[5] == "p" or col[6] == "p":
             run = dataframe[col]
             run = run[0]
 
@@ -200,7 +211,7 @@ def reaction_time(dataframe, minimum):
     # title_count is for collecting experiment numbers
     title_count = 0
     for col in dataframe.columns:
-        if col[5] == "p":
+        if col[5] == "p" or col[6] == "p":
             title_count += 1
             experiments_list.append(title_count)
 
@@ -213,9 +224,9 @@ def reaction_time(dataframe, minimum):
             for run in runs:
                 count = 0 
                 for datapoint in run:
-                    if run[0] - datapoint == minimum:
+                    if run[0] - datapoint >= minimum:
                         reaction_time = minimum / count
-                        #break?/while?
+                        
                     count += 1
 
                 reaction_times.append(reaction_time)
@@ -235,17 +246,37 @@ def reaction_time(dataframe, minimum):
     return experiments_list, mean_reaction_times, sdev_reaction_times, lower_bounds_list, upper_bounds_list
             
 a = amount_particles_reacted(df)
+
 exps, means, sdevs, lowerlist, upperlist = reaction_time(df, a)
+
+exps = np.array(exps)
+means = np.array(means)
+sdevs = np.array(sdevs)
+lowerlist = np.array(lowerlist)
+upperlist = np.array(upperlist)
 
 # plt.plot(exps, means)
 # plt.show() - % stck - *        experiment waardes in figuur?
+
+# plot 95CI
 fig, ax = plt.subplots()
 ax.plot(exps,means)
+
+
+# toggle for standard dev
 ax.fill_between(exps, (lowerlist), (upperlist), color='b', alpha=0.1)
+# ax.fill_between(exps, (means - sdevs), (means + sdevs), color='b', alpha=0.1)
+
+# set limits
+ax.set_ylim([1, 5])
+ 
 plt.title("mean reaction times for experiments, with 95% confidence intervals")
 plt.xlabel("experiments")
 plt.ylabel("mean reaction time")
 plt.show()
 
-# # get names of experiments
-#     experiment_list = []
+
+
+
+# get names of experiments
+# experiment_list = []
