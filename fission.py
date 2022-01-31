@@ -339,7 +339,7 @@ values_run = [(1000, 1183), (1000, 1140), (1000, 1095),
               (1200, 1095), (1300, 1140), (1400, 1183)]
 amounts_run = 30
 
-with open('data2.csv', 'w', newline='') as myfile:
+with open('data.csv', 'w', newline='') as myfile:
     wr = csv.writer(myfile)
     myfile.write('The experiments 1-9 are the different density value simulations\n')
     myfile.write('and the experiments 10-18 are the different total mass value simulations.\n')
