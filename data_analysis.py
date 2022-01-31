@@ -1,62 +1,52 @@
 # Data analysis from csv file
 
-
 import csv
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-# data = open('bestand.csv')
-# csvreader = csv.reader(data)
-
-# read_csv = pd.read_csv('bestand.csv', header=None)
-# print(read_csv)
-
-
-# df = pd.read_csv('bestand.csv', header=None)
-
-# ax = df.plot(kind = "line")
-# ax.legend(["Particles", "Neutrons"])
-# plt.xlabel("time")
-# plt.ylabel("quantity")
-# plt.show()
-
-# plt.show()
-
-# df = pd.DataFrame
-
-# len of runs should be 2 * runs * experiments
 columns = []
 index = []
 runs = []
 
-# toggle csv file
-# with open('data2 _manually_altered.csv', 'r') as f:
-with open('data3.csv', 'r') as f:
+# skip explanation lines
+skip_amount_of_lines = 6
+
+# open csv and put the values from csv in lists
+with open('data.csv', 'r') as f:
+    line_counter = 0
     for line in f:
-        line = line.strip().split(',')
+        if line_counter > skip_amount_of_lines:
+            line = line.strip().split(',')
 
-        if str(line[0])[0] == "e":
-            columns.append(f"{line[0]}")
-            # (str(line[0]))
-        
-        if str(line[1])[0] == "r":
-            index.append(line[1][4:6])
-            # line[1]
-
-        else:
-            linelist = []
-            for value in line:
-                try:
-                    linelist.append(int(value))
-                except ValueError:
-                    skip = 1
-            runs.append(linelist)
+            # get experiment names for columns
+            if str(line[0])[0] == "e":
+                columns.append(f"{line[0]}")
+                # (str(line[0]))
             
+            # get run names for indices
+            if str(line[1])[0] == "r":
+                index.append(line[1][4:6])
+                # line[1]
+
+            # convert run to a list and then append the runs to a list
+            else:
+                linelist = []
+                for value in line:
+                    try:
+                        linelist.append(int(value))
+                    except ValueError:
+                        skip = 1
+                runs.append(linelist)
+
+        line_counter += 1
+
+# get clean list of indices
 index = set(index)
 index = list(index)
 index_sorted = sorted(index, key=int)
 
+# get clean list of columns
 columns = set(columns)
 columns = list(columns)
 columns.sort()
@@ -94,16 +84,19 @@ start = 0
 restart = 0
 check_even = 2
 
-# matrix solving algorithm
+# matrix solving algorithm to fill in the correct runs in the correct dataframe cell
 while len(indexlist) < len(runs):
 
     indexlist.append(start)
 
+    # add 1 every other loop
     if check_even % 2 == 0:
         add = 1
+    # otherwise add 2 * length of amount of runs list - 1
     else:
         add = (2 * len(index_sorted)) - 1
 
+    # if start exceeds the length, reset the number and update reset
     if start + add < len(runs):
         start = start + add
     else:
@@ -112,62 +105,13 @@ while len(indexlist) < len(runs):
 
     check_even += 1
 
+# fill in the dataframe
 count = 0 
 for a in index_sorted:
     for b in newcolumns:
         indic = indexlist[count]
         df.at[a, b] = runs[indic]
         count += 1
-
-
-# df.to_csv('df.csv')
-
-# I loop over all the particle lists from all experiments for 1 run , if the data list is an odd number, remove it
-# II check one light of the amount of particles from one run, and then check the next. If one run is longer than another
-# run then skip it, if its shorter, use that particle run length.
-# III now use that length as a point of reference and check how many iterations it took to get to that length.
-# For example, if the length is 300 than check for each run how much time it took to get 300 less particles
-
-
-# clearing the data frames of the neutron counts
-
-# first_experiment = df.iloc[0]
-# halved_count = int(len(df.count()) / 2)
-
-
-# for i in range(1,halved_count + 1):
-#     first_experiment.drop(f"exp {i}neutron" , inplace=True)
-
-# final_particle_count_amounts = []
-
-# # calculating lowest amount of particles in all the lists
-
-# for experiment in first_experiment:
-#     final_particle_amount = experiment[0] - experiment[-1]
-#     final_particle_count_amounts.append(final_particle_amount)
-
-# lowest_particle_count = min(final_particle_count_amounts)
-
-# list_of_times = []
-
-# for experiment in first_experiment:
-#     time_count = 0
-#     stop_value = experiment[0] - lowest_particle_count
-
-#     for value in experiment:
-#         if value > stop_value:
-#             time_count += 1
-#         else:
-#             continue
-#     list_of_times.append(time_count)
-
-# reaction_speed_list = []
-
-# for time_steps in list_of_times:
-#         reaction_speed = lowest_particle_count / time_steps
-#         reaction_speed_list.append(reaction_speed)
-
-# print(reaction_speed_list)
 
 def amount_particles_reacted(dataframe):
     '''
@@ -188,14 +132,14 @@ def amount_particles_reacted(dataframe):
     amount = min(find_smallest)
     return amount
 
-def reaction_time(dataframe, minimum):
+def reaction_speed(dataframe, minimum):
     '''
-    Function to get average and standard deviations of reaction speed
+    Function to get average, standard deviations and confidence intervals of reaction speed
     '''
 
     experiments_list = []
-    mean_reaction_times = []
-    sdev_reaction_times = []
+    mean_reaction_speeds = []
+    sdev_reaction_speeds = []
     lower_bounds_list = []
     upper_bounds_list = []
 
@@ -210,65 +154,84 @@ def reaction_time(dataframe, minimum):
             runs = dataframe[col]
 
             # get reaction time for each run
-            reaction_times = []
+            reaction_speeds = []
 
             # iterate through runs and get reaction times
             for run in runs:
                 count = 0 
                 for datapoint in run:
                     if run[0] - datapoint >= minimum:
-                        reaction_time = minimum / count
+                        reaction_speed = minimum / count
                         
                     count += 1
 
-                reaction_times.append(reaction_time)
+                reaction_speeds.append(reaction_speed)
         
             # get mean and sd for each experiment
-            mean_reaction_time = np.mean(reaction_times)
-            sdev_reaction_time = np.std(reaction_times)
-            mean_reaction_times.append(mean_reaction_time)
-            sdev_reaction_times.append(sdev_reaction_time)
+            mean_reaction_speed = np.mean(reaction_speeds)
+            sdev_reaction_speed = np.std(reaction_speeds)
+            mean_reaction_speeds.append(mean_reaction_speed)
+            sdev_reaction_speeds.append(sdev_reaction_speed)
 
             # confidence intervals - bootstrap? - *v
-            lower_bound = np.percentile(reaction_times, 2.5)
-            upper_bound = np.percentile(reaction_times, 97.5)
+            lower_bound = np.percentile(reaction_speeds, 2.5)
+            upper_bound = np.percentile(reaction_speeds, 97.5)
             lower_bounds_list.append(lower_bound)
             upper_bounds_list.append(upper_bound)
 
-    return experiments_list, mean_reaction_times, sdev_reaction_times, lower_bounds_list, upper_bounds_list
+    return experiments_list, mean_reaction_speeds, sdev_reaction_speeds, lower_bounds_list, upper_bounds_list
             
 a = amount_particles_reacted(df)
 
-exps, means, sdevs, lowerlist, upperlist = reaction_time(df, a)
+exps, means, sdevs, lower, upper = reaction_speed(df, a)
 
 exps = np.array(exps)
 means = np.array(means)
 sdevs = np.array(sdevs)
-lowerlist = np.array(lowerlist)
-upperlist = np.array(upperlist)
+lower = np.array(lower)
+upper = np.array(upper)
 
-# plt.plot(exps, means)
-# plt.show() - % stck - *        experiment waardes in figuur?
+# split into first 9 experiments and second 9 experiments
+exps_density = exps[0:9]
+exps_total_mass = exps[9:18]
+exps_list = [exps_density, exps_total_mass]
 
-# plot 95CI
-fig, ax = plt.subplots()
-ax.plot(exps,means)
+means_density = means[0:9]
+means_total_mass = means[9:18]
+means_list = [means_density, means_total_mass]
 
+sdevs_density = sdevs[0:9]
+sdevs_total_mass = sdevs[9:18]
+sdevs_list = [sdevs_density, sdevs_total_mass] 
 
-# toggle for standard dev
-ax.fill_between(exps, (lowerlist), (upperlist), color='b', alpha=0.1)
-# ax.fill_between(exps, (means - sdevs), (means + sdevs), color='b', alpha=0.1)
+lower_density = lower[0:9]
+lower_total_mass = lower[9:18]
+lower_list = [lower_density, lower_total_mass]
 
-# set limits
-ax.set_ylim([1, 5])
- 
-plt.title("mean reaction times for experiments, with 95% confidence intervals")
-plt.xlabel("experiments")
-plt.ylabel("mean reaction time")
+upper_density = upper[0:9]
+upper_total_mass = upper[9:18]
+upper_list = [upper_density, upper_total_mass]
+
+# make plots, density
+
+percent_diffs = [-40, -30, -20, -10, 0, 10, 20, 30, 40]
+
+plt.plot(percent_diffs, means_list[0], label="density")
+# toggle (sdev or CI)
+plt.fill_between(percent_diffs, (lower_list[0]), (upper_list[0]), color='b', alpha=0.1)
+# plt.fill_between(exps, (means - sdevs), (means + sdevs), color='b', alpha=0.1)
+
+# total mass
+plt.plot(percent_diffs, means_list[1], label="total mass")
+# toggle (sdev or CI)
+plt.fill_between(percent_diffs, (lower_list[1]), (upper_list[1]), color='r', alpha=0.1)
+# plt.fill_between(exps, (means - sdevs), (means + sdevs), color='b', alpha=0.1)
+plt.title("reaction speeds for experiments with 95% confidence intervals")
+plt.legend()
+plt.xlabel("difference from baseline (in percentage)")
+plt.ylabel("reactions per timestep")
 plt.show()
 
-print(df)
 
 
-# get names of experiments
-# experiment_list = []
+
