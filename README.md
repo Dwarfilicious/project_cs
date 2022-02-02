@@ -15,4 +15,4 @@ many large simulations which would result in a computational time between 12 and
 depending on system speed.
 
 data_analysis.py opens data.csv and does the required data manipulation to show a graph 
-that should resemble figure_reaction_speed.png.
+that should resemble Figure_reaction_speed.png.
