@@ -10,10 +10,10 @@ index = []
 runs = []
 
 # skip explanation lines
-skip_amount_of_lines = 6
+skip_amount_of_lines = 1
 
 # open csv and put the values from csv in lists
-with open('data.csv', 'r') as f:
+with open('reruns75.csv', 'r') as f:
     line_counter = 0
     for line in f:
         if line_counter > skip_amount_of_lines:
@@ -113,26 +113,7 @@ for a in index_sorted:
         df.at[a, b] = runs[indic]
         count += 1
 
-def amount_particles_reacted(dataframe):
-    '''
-    Function to calculate reaction speed from a dataframe
-    '''
-
-    # determine smallest amount of interactions that take place in an experiment
-    find_smallest = []
-
-    for col in dataframe.columns:
-        if col[5] == "p" or col[6] == "p":
-            run = dataframe[col]
-            run = run[0]
-
-            # decrease in amount of particles
-            diff = run[0] / 2
-            find_smallest.append(diff)
-    amount = min(find_smallest)
-    return amount
-
-def reaction_speed(dataframe, minimum):
+def reaction_speed(dataframe, minimum, stop):
     '''
     Function to get average, standard deviations and confidence intervals of reaction speed
     '''
@@ -157,7 +138,14 @@ def reaction_speed(dataframe, minimum):
             reaction_speeds = []
 
             # iterate through runs and get reaction times
+            # stopcount to stop at 30 and get original confidence interval
+            stopcount = 0
             for run in runs:
+
+                # stop if we have reached limit
+                if stopcount == stop:
+                    break
+                
                 count = 0 
                 for datapoint in run:
                     if run[0] - datapoint >= minimum:
@@ -166,7 +154,8 @@ def reaction_speed(dataframe, minimum):
                     count += 1
 
                 reaction_speeds.append(reaction_speed)
-        
+                stopcount += 1
+
             # get mean and sd for each experiment
             mean_reaction_speed = np.mean(reaction_speeds)
             sdev_reaction_speed = np.std(reaction_speeds)
@@ -179,55 +168,11 @@ def reaction_speed(dataframe, minimum):
             lower_bounds_list.append(lower_bound)
             upper_bounds_list.append(upper_bound)
 
-    return experiments_list, mean_reaction_speeds, sdev_reaction_speeds, lower_bounds_list, upper_bounds_list
-            
-a = amount_particles_reacted(df)
+    return lower_bounds_list, upper_bounds_list
 
-exps, means, sdevs, lower, upper = reaction_speed(df, a)
+# compare old and new CI
+lower_og, upper_og = reaction_speed(df, 300, 30)
+lower_new, upper_new = reaction_speed(df, 300, 100)
+print(f"old confidence interval: {lower_og}, {upper_og}")
+print(f"new confidence interval (more runs) {lower_new}, {upper_new}")
 
-exps = np.array(exps)
-means = np.array(means)
-sdevs = np.array(sdevs)
-lower = np.array(lower)
-upper = np.array(upper)
-
-# split into first 9 experiments and second 9 experiments
-exps_density = exps[0:9]
-exps_total_mass = exps[9:18]
-exps_list = [exps_density, exps_total_mass]
-
-means_density = means[0:9]
-means_total_mass = means[9:18]
-means_list = [means_density, means_total_mass]
-
-sdevs_density = sdevs[0:9]
-sdevs_total_mass = sdevs[9:18]
-sdevs_list = [sdevs_density, sdevs_total_mass] 
-
-lower_density = lower[0:9]
-lower_total_mass = lower[9:18]
-lower_list = [lower_density, lower_total_mass]
-
-upper_density = upper[0:9]
-upper_total_mass = upper[9:18]
-upper_list = [upper_density, upper_total_mass]
-
-# make plots, density
-
-percent_diffs = [-40, -30, -20, -10, 0, 10, 20, 30, 40]
-
-plt.plot(percent_diffs, means_list[0], label="density")
-# toggle (sdev or CI)
-plt.fill_between(percent_diffs, (lower_list[0]), (upper_list[0]), color='b', alpha=0.1)
-# plt.fill_between(exps, (means - sdevs), (means + sdevs), color='b', alpha=0.1)
-
-# total mass
-plt.plot(percent_diffs, means_list[1], label="total mass")
-# toggle (sdev or CI)
-plt.fill_between(percent_diffs, (lower_list[1]), (upper_list[1]), color='r', alpha=0.1)
-# plt.fill_between(exps, (means - sdevs), (means + sdevs), color='b', alpha=0.1)
-plt.title("reaction speeds for experiments with 95% confidence intervals")
-plt.legend()
-plt.xlabel("difference from baseline (in percentage)")
-plt.ylabel("reactions per timestep")
-plt.show()
