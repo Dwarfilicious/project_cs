@@ -7,7 +7,7 @@ with said csv file in a different python file.
 
 To change the parameters that the model works with, it is possible to change the tuples in
 the list values_run. Each tuple represents values in the shape (amount of particles, radius of the system)
-and the entire list of values is iterated through to acquire data for all parametersets.
+and the entire list of tuples is iterated through to acquire data for all parameter sets.
 
 When the intention is just to check whether the analysis on acquired data is reproducable,
 it is recommended to just run the data_analysis.py file. The data acquisition (fission.py) runs 
